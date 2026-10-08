@@ -1,2 +1,492 @@
 # Customer_Behavior_Analysis
-Data Analytics project showcasing customer behavior analysis using Python, SQL and PowerBI.
+# 📊 Customer Shopping Behavior Analysis
+
+## Overview
+
+This project is an end-to-end **Data Analytics project** focused on analyzing customer shopping behavior and identifying meaningful business insights from customer transaction data.
+
+The project covers the complete analytics workflow:
+
+**Data Loading → Data Cleaning → EDA → Feature Engineering → PostgreSQL & SQL Analysis → Power BI Dashboard → Report **
+
+The objective is to understand customer purchasing patterns, revenue contribution, product performance, discounts, subscriptions, shipping preferences, and customer segments.
+
+---
+
+## 🎯 Project Objectives
+
+- Analyze customer shopping behavior
+- Clean and prepare raw customer data
+- Perform Exploratory Data Analysis (EDA)
+- Create meaningful features for analysis
+- Load the processed data into PostgreSQL
+- Perform business-focused SQL analysis
+- Build an interactive Power BI dashboard
+- Generate a data analytics report
+- Present key insights using Gamma
+
+---
+
+## 📂 Dataset
+
+**Dataset:** Customer Shopping Behavior
+
+The dataset contains customer-level information related to shopping activity, including:
+
+- Customer ID
+- Age
+- Gender
+- Item Purchased
+- Category
+- Purchase Amount
+- Review Rating
+- Shipping Type
+- Discount Applied
+- Subscription Status
+- Previous Purchases
+- Frequency of Purchases
+- And other customer attributes
+
+The dataset is initially loaded into Python using Pandas.
+
+```python
+import pandas as pd
+
+df = pd.read_csv('customer_shopping_behavior.csv')
+```
+
+---
+
+## 🛠️ Tools & Technologies
+
+| Tool / Technology | Purpose |
+|---|---|
+| **Python** | Data analysis and preprocessing |
+| **Pandas** | Data manipulation and cleaning |
+| **Jupyter Notebook** | Analysis environment |
+| **PostgreSQL** | Database analysis |
+| **SQL** | Business data analysis |
+| **SQLAlchemy** | Connecting Python with PostgreSQL |
+| **Psycopg2** | PostgreSQL database connectivity |
+| **Power BI** | Interactive dashboard |
+| **GitHub** | Project documentation and version control |
+
+---
+
+# 🔄 Project Workflow
+
+```text
+Customer Shopping Dataset
+          ↓
+     Python / Pandas
+          ↓
+ Data Cleaning & EDA
+          ↓
+ Feature Engineering
+          ↓
+     PostgreSQL
+          ↓
+     SQL Analysis
+          ↓
+     Power BI
+          ↓
+   Business Report
+          ↓
+    Gamma Presentation
+```
+
+---
+
+# 🚀 Project Steps
+
+## 1. Data Loading
+
+The dataset was loaded into Python using **Pandas** and initially explored using:
+
+- `head()`
+- `info()`
+- `describe()`
+- Missing-value analysis
+
+```python
+df.head()
+df.info()
+df.describe(include="all")
+df.isnull().sum()
+```
+
+---
+
+## 2. Data Cleaning
+
+The dataset was cleaned and prepared for further analysis.
+
+### Missing Values
+
+Missing **Review Rating** values were imputed using the median review rating within each product category.
+
+```python
+df['Review Rating'] = df.groupby('Category')['Review Rating'].transform(
+    lambda x: x.fillna(x.median())
+)
+```
+
+### Column Standardization
+
+Column names were converted to lowercase and spaces were replaced with underscores.
+
+```python
+df.columns = df.columns.str.lower()
+df.columns = df.columns.str.replace(' ','_')
+```
+
+The purchase amount column was also renamed for easier SQL analysis:
+
+```text
+purchase_amount_(usd) → purchase_amount
+```
+
+---
+
+# 3. Feature Engineering
+
+Additional features were created to improve the analysis.
+
+### Age Group
+
+Customers were divided into four age groups using quartiles:
+
+- Young Adult
+- Adult
+- Middle-Aged
+- Senior
+
+```python
+labels = ['Young Adult', 'Adult', 'Middle-Aged', 'Senior']
+
+df['age_group'] = pd.qcut(
+    df['age'],
+    q=4,
+    labels=labels
+)
+```
+
+### Purchase Frequency in Days
+
+Purchase frequency categories were converted into numerical day intervals.
+
+Examples:
+
+| Frequency | Days |
+|---|---:|
+| Weekly | 7 |
+| Fortnightly | 14 |
+| Bi-Weekly | 14 |
+| Monthly | 30 |
+| Quarterly | 90 |
+| Every 3 Months | 90 |
+| Annually | 365 |
+
+A new column called `purchase_frequency_days` was created.
+
+### Removing Redundant Data
+
+The analysis also checked the relationship between `discount_applied` and `promo_code_used`. After validation, `promo_code_used` was removed from the dataset.
+
+---
+
+# 4. PostgreSQL Integration
+
+The cleaned dataset was loaded into a PostgreSQL database using **SQLAlchemy** and **Psycopg2**.
+
+The data was stored in the `customer` table.
+
+```python
+from sqlalchemy import create_engine
+
+engine = create_engine(
+    "postgresql+psycopg2://username:password@localhost:5432/Customer_behavior"
+)
+
+df.to_sql(
+    "customer",
+    engine,
+    if_exists="replace",
+    index=False
+)
+```
+
+> For security, database credentials should be stored in environment variables rather than directly inside the notebook.
+
+---
+
+# 5. SQL Analysis
+
+Business-focused SQL queries were written in PostgreSQL to answer important analytical questions.
+
+### Key Analysis Performed
+
+1. **Revenue by Gender**
+   - Compared total revenue generated by male and female customers.
+
+2. **Discounted Purchases**
+   - Identified customers who used a discount but spent at or above the average purchase amount.
+
+3. **Top-Rated Products**
+   - Identified the top 5 products based on average review rating.
+
+4. **Shipping Analysis**
+   - Compared average purchase amounts for Standard and Express shipping.
+
+5. **Subscription Analysis**
+   - Compared customer count, average spending, and total revenue between subscribers and non-subscribers.
+
+6. **Discount Rate by Product**
+   - Identified the top 5 products with the highest percentage of discounted purchases.
+
+7. **Customer Segmentation**
+   - Classified customers as:
+     - New
+     - Returning
+     - Loyal
+
+8. **Top Products by Category**
+   - Used window functions to identify the top 3 most purchased products within each category.
+
+9. **Repeat Buyers & Subscription**
+   - Analyzed subscription status among customers with more than 5 previous purchases.
+
+10. **Revenue by Age Group**
+   - Analyzed total revenue contribution from each age group.
+
+The SQL queries are available in:
+
+```text
+Customer_Behavior_sql_queries.sql
+```
+
+---
+
+# 📊 Power BI Dashboard
+
+An interactive **Power BI dashboard** was created using the processed customer shopping data.
+
+### Dashboard Focus
+
+The dashboard provides insights into:
+
+- Customer demographics
+- Revenue and purchase performance
+- Product performance
+- Customer subscriptions
+- Discounts
+- Shipping preferences
+- Customer segments
+- Age-group revenue
+- Purchase behavior
+
+### Dashboard File
+
+```text
+Customer_Behavior_Dashboard.pbix
+```
+
+### Dashboard Preview
+
+Add a screenshot of the dashboard to your repository:
+
+```markdown
+![Customer Shopping Behavior Dashboard](images/dashboard.png)
+```
+
+---
+
+# 📑 Business Report
+
+A report was created to document the analytical process and communicate the findings.
+
+The report covers:
+
+- Project objective
+- Dataset overview
+- Data preparation
+- EDA
+- Feature engineering
+- SQL analysis
+- Power BI dashboard
+- Key findings
+- Business insights and recommendations
+
+---
+
+# 🎤 Presentation
+
+A professional presentation was created using **Gamma** to communicate the project findings.
+
+The presentation summarizes:
+
+- Business problem
+- Dataset
+- Analytical approach
+- Key metrics
+- SQL insights
+- Dashboard findings
+- Business recommendations
+
+---
+
+# 📈 Key Results
+
+The analysis provides insights into several important areas of customer behavior:
+
+- Revenue contribution across customer demographics
+- Product ratings and product popularity
+- Impact of discounts on purchasing behavior
+- Spending behavior of subscribed and non-subscribed customers
+- Customer segmentation based on previous purchases
+- Shipping-type purchasing patterns
+- Revenue contribution by age group
+- Relationship between repeat purchases and subscriptions
+
+Example:
+
+```text
+• Subscribers generated ₹X in total revenue.
+• The highest-revenue age group contributed ₹X.
+• Product X had the highest average rating.
+• Category X recorded the highest number of purchases.
+• X% of purchases were made using discounts.
+```
+
+---
+
+# 📁 Project Structure
+
+```text
+Customer-Shopping-Behavior-Analysis/
+│
+├── customer_shopping_behavior.csv
+│
+├── CustomerShopping_Behavior_Analysis.ipynb
+│
+├── Customer_Behavior_sql_queries.sql
+│
+├── Customer_Behavior_Dashboard.pbix
+│
+├── Customer_Behavior_Report.pdf
+│
+└── README.md
+```
+
+---
+
+# ▶️ How to Run
+
+## Step 1 — Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/Customer-Shopping-Behavior-Analysis.git
+
+cd Customer-Shopping-Behavior-Analysis
+```
+
+## Step 2 — Install Python Dependencies
+
+```bash
+pip install pandas sqlalchemy psycopg2-binary jupyter
+```
+
+## Step 3 — Run the Jupyter Notebook
+
+```bash
+jupyter notebook
+```
+
+Open:
+
+```text
+CustomerShopping_Behavior_Analysis.ipynb
+```
+
+Run the cells sequentially to perform data cleaning and feature engineering.
+
+## Step 4 — Configure PostgreSQL
+
+Create a PostgreSQL database:
+
+```text
+Customer_behavior
+```
+
+Update your PostgreSQL username, password, host, port, and database name in the notebook.
+
+Run the PostgreSQL connection section to load the cleaned dataset into the:
+
+```text
+customer
+```
+
+table.
+
+## Step 5 — Run SQL Queries
+
+Open:
+
+```text
+Customer_Behavior_sql_queries.sql
+```
+
+Execute the queries in PostgreSQL / pgAdmin.
+
+## Step 6 — Open Power BI Dashboard
+
+Open:
+
+```text
+Customer_Behavior_Dashboard.pbix
+```
+
+using **Power BI Desktop**.
+
+Refresh the data connection if required.
+
+---
+
+# 💡 Skills Demonstrated
+
+- Python
+- Pandas
+- Exploratory Data Analysis
+- Data Cleaning
+- Feature Engineering
+- SQL
+- PostgreSQL
+- SQLAlchemy
+- Data Visualization
+- Power BI
+- Dashboard Development
+- Business Analysis
+- Data Storytelling
+- Report Writing
+- Presentation Development
+
+---
+
+# 🏁 Conclusion
+
+This project demonstrates a complete **end-to-end data analytics workflow**, from raw customer data to business-ready insights.
+
+By combining **Python, PostgreSQL, SQL, Power BI, and Gamma**, the project demonstrates practical skills in data preparation, exploratory analysis, database querying, visualization, dashboard development, and business communication.
+
+It is designed to showcase how raw customer data can be transformed into **actionable insights that support data-driven decision-making**.
+
+---
+
+## 👨‍💻 Author
+
+**Omkar Dubal**
+
+**BE – Information Technology | 2026 Graduate**
+
+- GitHub: `https://github.com/omkarDubal004`
+- LinkedIn: `https://www.linkedin.com/in/omkar-dubal-397319259`
