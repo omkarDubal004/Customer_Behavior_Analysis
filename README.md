@@ -91,8 +91,6 @@ Customer Shopping Dataset
      Power BI
           ↓
    Business Report
-          ↓
-    Gamma Presentation
 ```
 
 ---
